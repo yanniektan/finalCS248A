@@ -21,11 +21,11 @@
 	],
 	"meshes": [
 	  {
-		"filename": "C:\\Users\\khaba\\source\\repos\\finalCS248A\\media\\spheres\\sphere.obj",
+		"filename": "../../media/spheres/sphere.obj",
 		"translate": [-50, 0, 0],
 		"material": "phong",
-		"diffuse_filename": "../textures/Blue_Marble_002_COLOR.png",
-		"normal_filename": "../textures/Blue_Marble_002_NORM.png",
+		"diffuse_filename": "../../media/textures/Blue_Marble_002_COLOR.png",
+		"normal_filename": "../../media/textures/Blue_Marble_002_NORM.png",
 		"spec_exp": 10.0,
 		"texcoord_v_flip": "true",
 		"texcoord_u_scale": 1,
@@ -35,12 +35,12 @@
 	  },
   
 	  {
-		"filename": "C:\\Users\\khaba\\source\\repos\\finalCS248A\\media\\spheres\\sphere.obj",
+		"filename": "../../media/spheres/sphere.obj",
 		"translate": [0, 0, 0],
 		"material": "phong",
 		"spec_exp": 20.0,
-		"diffuse_filename": "../textures/brick_color_map.png",
-		"normal_filename": "../textures/brick_normal_map.png",
+		"diffuse_filename": "../../media/textures/brick_color_map.png",
+		"normal_filename": "../../media/textures/brick_normal_map.png",
 		"texcoord_v_flip": "true",
 		"texcoord_u_scale": 1,
 		"texcoord_v_scale": 1,
@@ -49,10 +49,10 @@
 	  },
   
 	  {
-		"filename": "C:\\Users\\khaba\\source\\repos\\finalCS248A\\media\\spheres\\sphere.obj",
+		"filename": "../../media/spheres/sphere.obj",
 		"translate": [50, 0, 0],
 		"material": "mirror",
-		"environment_filename": "../textures/streetscene.png",
+		"environment_filename": "../../media/textures/streetscene.png",
 		"texcoord_v_flip": "true",
 		"texcoord_u_scale": 1,
 		"texcoord_v_scale": 1,
@@ -61,11 +61,11 @@
 	  },
   
 	  {
-		"filename": "C:\\Users\\khaba\\source\\repos\\finalCS248A\\media\\spheres\\plane.obj",
+		"filename": "../../media/spheres/plane.obj",
 		"translate": [0, -25, 0],
 		"material": "phong",
-		"diffuse_filename": "../texturess/Stone_Tiles_003_COLOR.png",
-		"normal_filename": "../textures/Stone_Tiles_003_NORM.png",
+		"diffuse_filename": "../../media/texturess/Stone_Tiles_003_COLOR.png",
+		"normal_filename": "../../media/textures/Stone_Tiles_003_NORM.png",
 		"spec_exp": 20.0,
 		"texcoord_v_flip": "true",
 		"texcoord_u_scale": 4,

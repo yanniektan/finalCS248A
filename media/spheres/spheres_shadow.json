@@ -51,11 +51,11 @@
     "meshes" :
 	[
         {
-			"filename" : "sphere.obj",
+			"filename" : "../../media/spheres/sphere.obj",
             "translate" : [-45, 0, 0],
             "material" : "phong",
-			"diffuse_filename" : "../textures/Blue_Marble_002_COLOR.png",
-			"normal_filename" : "../textures/Blue_Marble_002_NORM.png",
+			"diffuse_filename" : "../../media/textures/Blue_Marble_002_COLOR.png",
+			"normal_filename" : "../../media/textures/Blue_Marble_002_NORM.png",
 			"spec_exp" : 10.0,
 			"texcoord_v_flip" : "true",
             "texcoord_u_scale" : 1,
@@ -65,12 +65,12 @@
 		},
         
 		{
-			"filename" : "sphere.obj",
+			"filename" : "../../media/spheres/sphere.obj",
             "translate" : [0, 0, 0],
             "material" : "phong",
             "spec_exp" : 20.0,
-			"diffuse_filename" : "../textures/brick_color_map.png",
-			"normal_filename" : "../textures/brick_normal_map.png",
+			"diffuse_filename" : "../../media/textures/brick_color_map.png",
+			"normal_filename" : "../../media/textures/brick_normal_map.png",
 			"texcoord_v_flip" : "true",
             "texcoord_u_scale" : 1,
             "texcoord_v_scale" : 1,
@@ -79,13 +79,13 @@
 		},
 
 		{
-			"filename" : "sphere.obj",
+			"filename" : "../../media/spheres/sphere.obj",
             "translate" : [-22, -14.5, 20],
             "scale" : [0.3, 0.3, 0.3],
             "material" : "phong",
             "spec_exp" : 20.0,
-			"diffuse_filename" : "../textures/Quartz_001_COLOR.png",
-			"normal_filename" : "../textures/Quartz_001_NORM.png",
+			"diffuse_filename" : "../../media/textures/Quartz_001_COLOR.png",
+			"normal_filename" : "../../media/textures/Quartz_001_NORM.png",
 			"texcoord_v_flip" : "true",
             "texcoord_u_scale" : 1,
             "texcoord_v_scale" : 1,
@@ -94,13 +94,13 @@
 		},
 
         {
-			"filename" : "sphere.obj",
+			"filename" : "../../media/spheres/sphere.obj",
             "translate" : [22, -14.5, 20],
             "scale" : [0.3, 0.3, 0.3],
             "material" : "phong",
             "spec_exp" : 20.0,
-			"diffuse_filename" : "../textures/Red_Marble_001_COLOR.png",
-			"normal_filename" : "../textures/Red_Marble_001_NRM.png",
+			"diffuse_filename" : "../../media/textures/Red_Marble_001_COLOR.png",
+			"normal_filename" : "../../media/textures/Red_Marble_001_NRM.png",
 			"texcoord_v_flip" : "true",
             "texcoord_u_scale" : 1,
             "texcoord_v_scale" : 1,
@@ -109,10 +109,10 @@
 		},
         
 		{
-			"filename" : "sphere.obj",
+			"filename" : "../../media/spheres/sphere.obj",
         	"translate" : [45, 0, 0],
             "material" : "mirror",
-		    "environment_filename" : "../textures/grace_env.png",
+		    "environment_filename" : "../../media/textures/grace_env.png",
 			"texcoord_v_flip" : "true",
             "texcoord_u_scale" : 1,
             "texcoord_v_scale" : 1,
@@ -121,11 +121,11 @@
 		},
         
 		{
-			"filename" : "plane.obj",
+			"filename" : "../../media/spheres/plane.obj",
             "translate" : [0, -20, 0],
             "material" : "phong",
-			"diffuse_filename" : "../textures/Stone_Tiles_003_COLOR.png",
-            "normal_filename" : "../textures/Stone_Tiles_003_NORM.png",
+			"diffuse_filename" : "../../media/textures/Stone_Tiles_003_COLOR.png",
+            "normal_filename" : "../../media/textures/Stone_Tiles_003_NORM.png",
             "spec_exp" : 20.0,
 			"texcoord_v_flip" : "true",
             "texcoord_u_scale" : 4,
