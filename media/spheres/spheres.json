@@ -64,7 +64,7 @@
 		"filename": "../../media/spheres/plane.obj",
 		"translate": [0, -25, 0],
 		"material": "phong",
-		"diffuse_filename": "../../media/texturess/Stone_Tiles_003_COLOR.png",
+		"diffuse_filename": "../../media/textures/Stone_Tiles_003_COLOR.png",
 		"normal_filename": "../../media/textures/Stone_Tiles_003_NORM.png",
 		"spec_exp": 20.0,
 		"texcoord_v_flip": "true",
