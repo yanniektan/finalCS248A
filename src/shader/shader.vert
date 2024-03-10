@@ -38,8 +38,13 @@ void main(void)
     // mat3 mymatrix = mat3(a, b, c)
     // (3) obj2worldNorm is a 3x3 matrix transforming object space normals to world space normals
     // compute tangent space to world space matrix
-    
     normal = obj2worldNorm * vtx_normal;
+    vec3 n = normalize(vtx_normal);
+    vec3 t = normalize(vtx_tangent);
+    vec3 nt = normalize(cross(n,t));
+    mat3 tan2obj = mat3(t, nt, n);
+    tan2obj = tan2obj;
+    tan2world = tan2obj*obj2worldNorm;
 
     vertex_diffuse_color = vtx_diffuse_color;
     texcoord = vtx_texcoord;

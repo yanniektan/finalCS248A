@@ -3,6 +3,7 @@
 #include <fstream>
 #include <string>
 #include <iostream>
+#include <sstream>
 
 #include "gl_utils.h"
 
@@ -39,13 +40,17 @@ bool readFile(const std::string& filename, std::string& contents) {
         return false;
           
     // read it line by line
-    std::string line;
+    /*std::string line;
       
     while(!file.eof()) {
         getline( file, line );
         contents += line + "\n";
-    }
-     
+    }*/
+    std::stringstream contentStream{};
+    contentStream << file.rdbuf();
+
+    // Use the contentStream as needed
+    contents = contentStream.str();
     file.close();  
     return true;
 }
@@ -129,7 +134,7 @@ bool Shader::prepareSourceCode(const std::string& filename, std::string* out_sou
 #ifdef __APPLE__
   std::string version = "#version 150\n";
 #else
-  std::string version = "#version 130\n";
+  std::string version = "#version 450\n";
 #endif 
   *out_source  = version + (*out_source);
   return true;
