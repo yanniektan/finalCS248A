@@ -17,7 +17,7 @@ uniform sampler2D diffuseTextureSampler;
 // TODO CS248 Part 3: Normal Mapping
 uniform sampler2D normalTextureSampler;
 // TODO CS248 Part 4: Environment Mapping
-
+uniform sampler2D environmentTextureSampler;
 
 //
 // lighting environment definition. Scenes may contain directional
