@@ -145,9 +145,9 @@ void main(void)
        N = texture(normalTextureSampler, texcoord).rgb;
        N = N * 2.0f - 1.0f;
        N = tan2world * N;
-       
+
        // replace this line with your implementation
-       N = normalize(normal);
+       N = normalize(N);
 
     } else {
        N = normalize(normal);
