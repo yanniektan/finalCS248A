@@ -42,9 +42,9 @@ void main(void)
     vec3 n = normalize(vtx_normal);
     vec3 t = normalize(vtx_tangent);
     vec3 nt = normalize(cross(n,t));
-    mat3 tan2obj = mat3(n, t, nt);
-    tan2obj = inverse(tan2obj);
-    tan2world = tan2obj;
+    mat3 tan2obj = mat3(t, nt, n);
+    tan2obj = tan2obj;
+    tan2world = tan2obj*obj2worldNorm;
 
     vertex_diffuse_color = vtx_diffuse_color;
     texcoord = vtx_texcoord;
