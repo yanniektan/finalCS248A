@@ -104,8 +104,17 @@ vec3 SampleEnvironmentMap(vec3 D)
     //
     // (3) How do you convert theta and phi to normalized texture
     //     coordinates in the domain [0,1]^2?
-
-    return vec3(.25, .25, .25);    
+    float len = length(D);
+    float inv_len = 1.0f / len;
+    /*
+    Polar Angle: (\theta = \arccos\left(\frac{z}{r}\right))
+    Azimuthal Angle: (\phi = \arctan\left(\frac{y}{x}\right))
+    */
+    float u = acos(D.y * inv_len);
+    float v = atan(D.y * inv_len);
+    v += PI;
+    vec3 radiance = texture(environmentTextureSampler, vec2(u,v)).rgb;
+    return radiance;    
 }
 
 //
@@ -166,7 +175,9 @@ void main(void)
         // compute perfect mirror reflection direction here.
         // You'll also need to implement environment map sampling in SampleEnvironmentMap()
         //
-        vec3 R = normalize(vec3(1.0));
+        vec3 R = normalize(dir2camera);
+        R = 2.0f*dot(R, normal)*normal - R;
+        R = normalize(R);
         //
 
         // sample environment map
