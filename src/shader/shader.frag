@@ -17,6 +17,7 @@ uniform sampler2D diffuseTextureSampler;
 // TODO CS248 Part 3: Normal Mapping
 uniform sampler2D normalTextureSampler;
 // TODO CS248 Part 4: Environment Mapping
+uniform sampler2D envMapSampler;
 
 
 //
@@ -81,7 +82,6 @@ vec3 Phong_BRDF(vec3 L, vec3 V, vec3 N, vec3 diffuse_color, vec3 specular_color,
 
 }
 
-uniform sampler2D envMapSampler;
 
 //
 // SampleEnvironmentMap -- returns incoming radiance from specified direction
@@ -123,7 +123,7 @@ vec3 SampleEnvironmentMap(vec3 D)
     float u = phi / (2.0 * PI);
     float v = theta / PI;
 
-    // Sample envMapSampler as declared above
+// Sample envMapSampler as declared above
     vec3 envColor = texture(envMapSampler, vec2(u, v)).rgb;
     return envColor;
 }

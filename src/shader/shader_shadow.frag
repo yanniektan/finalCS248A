@@ -15,7 +15,10 @@ uniform bool useMirrorBRDF;         // true if mirror brdf should be used (defau
 uniform sampler2D diffuseTextureSampler;
 
 // TODO CS248 Part 3: Normal Mapping
+uniform sampler2D normalTextureSampler;
+
 // TODO CS248 Part 4: Environment Mapping
+uniform sampler2D envMapSampler;
 
 //
 // lighting environment definition. Scenes may contain directional
@@ -81,7 +84,10 @@ vec3 Phong_BRDF(vec3 L, vec3 V, vec3 N, vec3 diffuse_color, vec3 specular_color,
     // Implement diffuse and specular terms of the Phong
     // reflectance model here.
 
-    return diffuse_color;
+    vec3 final_color = diffuse_color * max(0.0f, dot(N, L)); // changed L / N to N / L
+    vec3 refl_dir = 2.0f*dot(L, N)*N;
+    final_color += specular_color * pow(max(0.0f, dot(refl_dir, V)), specular_exponent);
+    return final_color;
 }
 
 //
@@ -107,7 +113,24 @@ vec3 SampleEnvironmentMap(vec3 D)
     // (3) How do you convert theta and phi to normalized texture
     //     coordinates in the domain [0,1]^2?
 
-    return vec3(.25, .25, .25);   
+    D = normalize(D);
+
+    // convert 3D direction vector into spherical coordinates
+    float phi = atan(D.y, D.x);
+    float theta = acos(D.z / length(D)); // Ensure D is normalized, or just use D.z if D is known to be normalized
+
+    // Adjust phi to be in the range [0, 2PI]
+    if (phi < 0.0) {
+        phi += 2.0 * PI;
+    }
+
+    // Convert theta and phi into normalized texture coordinates [0,1]
+    float u = phi / (2.0 * PI);
+    float v = theta / PI;
+
+    // Sample envMapSampler as declared above
+    vec3 envColor = texture(envMapSampler, vec2(u, v)).rgb;
+    return envColor;
 }
 
 //
@@ -130,12 +153,12 @@ void main(void)
         diffuseColor = vertex_diffuse_color;
     }
 
-    // perform normal map lookup if required
+        // perform normal map lookup if required
     vec3 N = vec3(0);
     if (useNormalMapping) {
        // TODO: CS248 Part 3: Normal Mapping:
        // use tan2World in the normal map to compute the
-       // world space normal baaed on the normal map.
+       // world space normal based on the normal map.
 
        // Note that values from the texture should be scaled by 2 and biased
        // by negative -1 to covert positive values from the texture fetch, which
@@ -143,13 +166,17 @@ void main(void)
        //
        // In other words:   tangent_space_normal = texture_value * 2.0 - 1.0;
 
+       N = texture(normalTextureSampler, texcoord).rgb;
+       N = N * 2.0f - 1.0f;
+       N = tan2world * N;
+
        // replace this line with your implementation
-       N = normalize(normal);
+       N = normalize(N);
 
     } else {
        N = normalize(normal);
     }
-
+    
     vec3 V = normalize(dir2camera);
     vec3 Lo = vec3(0.1 * diffuseColor);   // this is ambient
 
