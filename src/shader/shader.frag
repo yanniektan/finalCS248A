@@ -74,12 +74,14 @@ vec3 Phong_BRDF(vec3 L, vec3 V, vec3 N, vec3 diffuse_color, vec3 specular_color,
     // TODO CS248 Part 2: Phong Reflectance
     // Implement diffuse and specular terms of the Phong
     // reflectance model here.
-    vec3 final_color = diffuse_color * max(0.0f, dot(L, N));
-    vec3 refl_dir = 2.0f*dot(L, N)*N - L;
+    vec3 final_color = diffuse_color * max(0.0f, dot(N, L)); // changed L / N to N / L
+    vec3 refl_dir = 2.0f*dot(L, N)*N;
     final_color += specular_color * pow(max(0.0f, dot(refl_dir, V)), specular_exponent);
     return final_color;
 
 }
+
+uniform sampler2D envMapSampler;
 
 //
 // SampleEnvironmentMap -- returns incoming radiance from specified direction
@@ -105,10 +107,30 @@ vec3 SampleEnvironmentMap(vec3 D)
     // (3) How do you convert theta and phi to normalized texture
     //     coordinates in the domain [0,1]^2?
 
-    return vec3(.25, .25, .25);    
+
+    D = normalize(D);
+
+    // convert 3D direction vector into spherical coordinates
+    float phi = atan(D.y, D.x);
+    float theta = acos(D.z / length(D)); // Ensure D is normalized, or just use D.z if D is known to be normalized
+
+    // Adjust phi to be in the range [0, 2PI]
+    if (phi < 0.0) {
+        phi += 2.0 * PI;
+    }
+
+    // Convert theta and phi into normalized texture coordinates [0,1]
+    float u = phi / (2.0 * PI);
+    float v = theta / PI;
+
+// Sample envMapSampler as declared above
+    vec3 envColor = texture(envMapSampler, vec2(u, v)).rgb;
+    return envColor;
 }
 
 //
+// Declaration for the environment map texture sampler
+
 // Fragment shader main entry point
 //
 void main(void)
@@ -167,7 +189,7 @@ void main(void)
         // You'll also need to implement environment map sampling in SampleEnvironmentMap()
         //
         vec3 R = normalize(vec3(1.0));
-        //
+        
 
         // sample environment map
         vec3 envColor = SampleEnvironmentMap(R);

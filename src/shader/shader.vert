@@ -32,7 +32,6 @@ void main(void)
     // Tips:
     //
     // (1) Make sure you normalize all columns of the matrix so that it is a rotation matrix.
-    //
     // (2) You can initialize a 3x3 matrix using 3 vectors as shown below:
     // vec3 a, b, c;
     // mat3 mymatrix = mat3(a, b, c)

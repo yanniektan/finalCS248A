@@ -378,12 +378,13 @@ void Mesh::internalDraw(bool shadowPass, const Matrix4x4& worldToNDC) const {
         // TODO CS248 Part 4: Environment Mapping:
         // You want to pass the environment texture into the shader program.
         // See diffuseTextureSampler for an example of passing textures.
-
+		if (doNormalMapping_)
+			shader_->setTextureSampler("envTextureSampler", environmentTextureId_);
         // TODO CS248 Part 5.2: Shadow Mapping:
         // You want to pass the array of shadow textures computed during shadow pass into the shader program.
         // See Scene::visualizeShadowMap for an example of passing texture arrays.
         // See shadow_viz.frag for an example of using texture arrays in the shader.
-
+		//    // vec3 color = texture(colorTextureArray, vec3(vTexCoord,0)).rgb; 
 
         // bind light parameters //////////////////////////////////
 
