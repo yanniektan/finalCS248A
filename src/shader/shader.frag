@@ -114,7 +114,7 @@ vec3 SampleEnvironmentMap(vec3 D)
     float v = acos(D.y / len); // theta
     float u = 0.0f;
     if (D.z != 0.0f)
-        u = atan(-D.x, D.z); // phi
+        u = atan(D.x, D.z); // phi
     if (u < 0.0f)
         u += double_PI; // Convert negative values to the range 0 - 2PI
     v /= PI;
@@ -184,7 +184,7 @@ void main(void)
         //
         vec3 R = normalize(dir2camera);
         R = 2.0f*dot(R, normal)*normal - R;
-        R = -normalize(R);
+        R = normalize(R);
 
         // sample environment map
         vec3 envColor = SampleEnvironmentMap(R);
