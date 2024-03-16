@@ -47,12 +47,14 @@ Matrix4x4 createWorldToCameraMatrix(const Vector3D& eye, const Vector3D& at, con
   // TODO CS248 Part 1: Coordinate transform
   // Compute the matrix that transforms a point in world space to a point in camera space.
 
+
 // Create the z-axis vector of the camera, which is what the eye is looking at minus the camera (@).
   Vector3D w = (eye - at).unit();
   // Now take the corss product of the up vector and the forward vector, w to get the x-axis vector.
   Vector3D u = cross(up, w).unit();
   // y axis is just cross product of forward and right vector.
   Vector3D v = cross(w, u).unit();
+
 
   // Construct a rotation matrix from these basis vectors.
     Matrix4x4 R;
