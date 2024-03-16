@@ -106,14 +106,18 @@ vec3 SampleEnvironmentMap(vec3 D)
     //     coordinates in the domain [0,1]^2?
     float len = length(D);
     float inv_len = 1.0f / len;
+    float double_PI = 2.0f*PI;
     /*
     Polar Angle: (\theta = \arccos\left(\frac{z}{r}\right))
     Azimuthal Angle: (\phi = \arctan\left(\frac{y}{x}\right))
     */
-    float u = acos(D.y * inv_len);
-    float v = atan(D.y * inv_len);
-    v += PI;
-    vec3 radiance = texture(environmentTextureSampler, vec2(u,v)).rgb;
+    float v = acos(D.y / len); // theta
+    float u = atan(-D.x, D.z); // phi
+    if (u < 0.0f)
+        u += double_PI; // Convert negative values to the range 0 - 2PI
+    v /= PI;
+    u /= double_PI;
+    vec3 radiance = texture(environmentTextureSampler, vec2(u, v)).rgb;
     return radiance;    
 }
 
@@ -177,8 +181,7 @@ void main(void)
         //
         vec3 R = normalize(dir2camera);
         R = 2.0f*dot(R, normal)*normal - R;
-        R = normalize(R);
-        //
+        R = -normalize(R);
 
         // sample environment map
         vec3 envColor = SampleEnvironmentMap(R);
