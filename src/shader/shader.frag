@@ -108,6 +108,24 @@ vec3 SampleEnvironmentMap(vec3 D)
     //     coordinates in the domain [0,1]^2?
 
 
+    D = normalize(D);
+
+    // convert 3D direction vector into spherical coordinates
+    float phi = atan(D.y, D.x);
+    float theta = acos(D.z / length(D)); // Ensure D is normalized, or just use D.z if D is known to be normalized
+
+    // Adjust phi to be in the range [0, 2PI]
+    if (phi < 0.0) {
+        phi += 2.0 * PI;
+    }
+
+    // Convert theta and phi into normalized texture coordinates [0,1]
+    float u = phi / (2.0 * PI);
+    float v = theta / PI;
+
+    // Sample envMapSampler as declared above
+    vec3 envColor = texture(envMapSampler, vec2(u, v)).rgb;
+    return envColor;
 }
 
 //
