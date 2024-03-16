@@ -58,8 +58,6 @@ in vec3 vertex_diffuse_color; // surface color
 out vec4 fragColor;
 
 #define PI 3.14159265358979323846
-
-
 //
 // Simple diffuse brdf
 //
@@ -169,7 +167,6 @@ void main(void)
        N = texture(normalTextureSampler, texcoord).rgb;
        N = N * 2.0f - 1.0f;
        N = tan2world * N;
-
        // replace this line with your implementation
        N = normalize(N);
 
@@ -191,6 +188,7 @@ void main(void)
         // You'll also need to implement environment map sampling in SampleEnvironmentMap()
         //
         vec3 R = normalize(vec3(1.0));
+        R = reflect(normalize(-dir2camera), normalize(normal)); // use this to reflect the image.
 
 
         // sample environment map
@@ -222,24 +220,6 @@ void main(void)
         Lo += light_magnitude * falloff * brdf_color;
     }
 
-    // for all spot lights
-	for (int i = 0; i < num_spot_lights; ++i) {
-    
-        vec3 intensity = spot_light_intensities[i];   // intensity of light: this is intensity in RGB
-        vec3 light_pos = spot_light_positions[i];     // location of spotlight
-        float cone_angle = spot_light_angles[i];      // spotlight falls off to zero in directions whose
-                                                      // angle from the light direction is grester than
-                                                      // cone angle. Caution: this value is in units of degrees!
-        //YT Code
-        float distance = length(spot_light_positions[i] - position);
-        float attenuation = 1.0 / (1.0 + distance * distance); // Distance attenuation
-        const float SMOOTHING = 0.1;
-        float intensity_factor = 0.0;
-
-        vec3 dir_to_surface = position - light_pos;
-        float angle = acos(dot(normalize(dir_to_surface), spot_light_directions[i])) * 180.0 / PI;
-        vec3 light_dir = normalize(spot_light_positions[i] - position);
-
         // TODO CS248 Part 5.1: Spotlight Attenuation: compute the attenuation of the spotlight due to two factors:
         // (1) distance from the spot light (D^2 falloff)
         // (2) attentuation due to being outside the spotlight's cone 
@@ -249,14 +229,6 @@ void main(void)
         // 1. Modulate intensity by a factor of 1/D^2, where D is the distance from the
         //    spotlight to the current surface point.  For robustness, it's common to use 1/(1 + D^2)
         //    to never multiply by a value greather than 1.
-
-        if(angle < (1.0 - SMOOTHING) * cone_angle) {
-            intensity_factor = 1.0;
-        } else if (angle < (1.0 + SMOOTHING) * cone_angle) {
-            intensity_factor = (1.0 + SMOOTHING) * cone_angle - angle;
-            intensity_factor /= (2.0 * SMOOTHING * cone_angle);
-        }
-
         //
         // 2. Modulate the resulting intensity based on whether the surface point is in the cone of
         //    illumination.  To achieve a smooth falloff, consider the following rules
@@ -272,20 +244,40 @@ void main(void)
         //    -- The reference solution uses SMOOTHING = 0.1, so 20% of the spotlight region is the smoothly
         //       facing out area.  Smaller values of SMOOTHING will create hard spotlights.
 
-        // CS248: remove this once you perform proper attenuation computations
-        // intensity = vec3(0.5, 0.5, 0.5);
+    // for all spot lights
+	for (int i = 0; i < num_spot_lights; ++i) {
+    
+        vec3 intensity = spot_light_intensities[i];   // intensity of light: this is intensity in RGB
+        vec3 light_pos = spot_light_positions[i];     // location of spotlight
+        float cone_angle = spot_light_angles[i];      // spotlight falls off to zero in directions whose
+                                                      // angle from the light direction > cone angle.
 
+        float distance = length(spot_light_positions[i] - position);
+        float attenuation = 1.0 / (1.0 + distance * distance); // Distance attenuation
+        const float SMOOTHING = 0.1;
+        float intensity_factor = 0.0;
+
+        vec3 dir_to_surface = position - light_pos;
+        float angle = acos(dot(normalize(dir_to_surface), spot_light_directions[i])) * 180.0 / PI;
+        vec3 light_dir = normalize(spot_light_positions[i] - position);
+
+        if(angle < (1.0 - SMOOTHING) * cone_angle) {
+            intensity_factor = 1.0;
+        } else if (angle < (1.0 + SMOOTHING) * cone_angle) {
+            intensity_factor = (1.0 + SMOOTHING) * cone_angle - angle;
+            intensity_factor /= (2.0 * SMOOTHING * cone_angle);
+        }
 
         // Render Shadows for all spot lights
         // TODO CS248 Part 5.2: Shadow Mapping: comute shadowing for spotlight i here 
         // HAVENT DONE
 
+        // Given
 	    vec3 L = normalize(-spot_light_directions[i]);
 		vec3 brdf_color = Phong_BRDF(L, V, N, diffuseColor, specularColor, specularExponent);
 
         // YT:
         vec3 total_intensity = attenuation * intensity_factor * spot_light_intensities[i];
-
 	    Lo += total_intensity * brdf_color; // changed to total_intensity
     }
 
