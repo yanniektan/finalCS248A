@@ -17,7 +17,7 @@ uniform sampler2D diffuseTextureSampler;
 // TODO CS248 Part 3: Normal Mapping
 uniform sampler2D normalTextureSampler;
 // TODO CS248 Part 4: Environment Mapping
-
+uniform sampler2D environmentTextureSampler;
 
 //
 // lighting environment definition. Scenes may contain directional
@@ -104,8 +104,24 @@ vec3 SampleEnvironmentMap(vec3 D)
     //
     // (3) How do you convert theta and phi to normalized texture
     //     coordinates in the domain [0,1]^2?
-
-    return vec3(.25, .25, .25);    
+    float len = length(D);
+    float inv_len = 1.0f / len;
+    float double_PI = 2.0f*PI;
+    /*
+    Polar Angle: (\theta = \arccos\left(\frac{z}{r}\right))
+    Azimuthal Angle: (\phi = \arctan\left(\frac{y}{x}\right))
+    */
+    float v = acos(D.y / len); // theta
+    float u = 0.0f;
+    if (D.z != 0.0f)
+        u = atan(D.x, D.z); // phi
+    if (u < 0.0f)
+        u += double_PI; // Convert negative values to the range 0 - 2PI
+    v /= PI;
+    u = 2.0f*PI - u;
+    u /= double_PI;
+    vec3 radiance = texture(environmentTextureSampler, vec2(u, v)).rgb;
+    return radiance;    
 }
 
 //
@@ -166,8 +182,9 @@ void main(void)
         // compute perfect mirror reflection direction here.
         // You'll also need to implement environment map sampling in SampleEnvironmentMap()
         //
-        vec3 R = normalize(vec3(1.0));
-        //
+        vec3 R = normalize(dir2camera);
+        R = 2.0f*dot(R, normal)*normal - R;
+        R = normalize(R);
 
         // sample environment map
         vec3 envColor = SampleEnvironmentMap(R);
