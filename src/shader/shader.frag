@@ -112,10 +112,13 @@ vec3 SampleEnvironmentMap(vec3 D)
     Azimuthal Angle: (\phi = \arctan\left(\frac{y}{x}\right))
     */
     float v = acos(D.y / len); // theta
-    float u = atan(-D.x, D.z); // phi
+    float u = 0.0f;
+    if (D.z != 0.0f)
+        u = atan(-D.x, D.z); // phi
     if (u < 0.0f)
         u += double_PI; // Convert negative values to the range 0 - 2PI
     v /= PI;
+    u = 2.0f*PI - u;
     u /= double_PI;
     vec3 radiance = texture(environmentTextureSampler, vec2(u, v)).rgb;
     return radiance;    
