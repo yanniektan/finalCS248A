@@ -384,7 +384,7 @@ void Mesh::internalDraw(bool shadowPass, const Matrix4x4& worldToNDC) const {
         // You want to pass the array of shadow textures computed during shadow pass into the shader program.
         // See Scene::visualizeShadowMap for an example of passing texture arrays.
         // See shadow_viz.frag for an example of using texture arrays in the shader.
-		shader_->setTextureArraySampler("shadowTextureSampler", scene_->getShadowTextureArrayId());
+		shader_->setTextureArraySampler("shadowTextureSamplers", scene_->getShadowTextureArrayId());
 		checkGLError("after binding shadowTextureSampler");
 
 		shader_->setMatrixArrayParameter("worldToLightArray", scene_->getWorldToShadowLightArray(), scene_->getNumShadowedLights());

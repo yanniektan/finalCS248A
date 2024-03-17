@@ -18,7 +18,7 @@ uniform sampler2D diffuseTextureSampler;
 uniform sampler2D normalTextureSampler;
 // TODO CS248 Part 4: Environment Mapping
 uniform sampler2D environmentTextureSampler;
-
+uniform sampler2DArray shadowTextureSamplers;
 //
 // lighting environment definition. Scenes may contain directional
 // and point light sources, as well as an environment map
@@ -53,6 +53,7 @@ in vec2 texcoord;     // surface texcoord (uv)
 in vec3 dir2camera;   // vector from surface point to camera
 in mat3 tan2world;    // tangent space to world space transform
 in vec3 vertex_diffuse_color; // surface color
+in vec4 fragLightPosition[MAX_NUM_LIGHTS];
 
 out vec4 fragColor;
 
@@ -273,15 +274,30 @@ void main(void)
         // intensity = vec3(0.5, 0.5, 0.5);
         // Render Shadows for all spot lights
         // TODO CS248 Part 5.2: Shadow Mapping: comute shadowing for spotlight i here 
-        // HAVENT DONE
+        // sklekena-yannie:
 
-	    vec3 L = normalize(-spot_light_directions[i]);
-		vec3 brdf_color = Phong_BRDF(L, V, N, diffuseColor, specularColor, specularExponent);
+        vec3 lp_position = fragLightPosition[i].xyz;
+        lp_position /= fragLightPosition[i].w;
+        // to index into the texture array we need vec3(u, v, layer level)
+        vec3 shadow_uv = vec3(lp_position.xy, i);
+        // perform light-space depth test
+        // get depth
+        float shadow_min_depth = texture(shadowTextureSamplers, shadow_uv).r;
+            // bilerp maybe
+        // compute distance from current_light -> position
+        //float current_light_depth = length(position - light_pos);
+        // check if current depth farther than depth at suv
+        if (lp_position.z > shadow_min_depth )
+            // handle shadow acne
+            continue;
+        
+        vec3 L = normalize(-spot_light_directions[i]);
+        vec3 brdf_color = Phong_BRDF(L, V, N, diffuseColor, specularColor, specularExponent);
 
         // YT:
         vec3 total_intensity = attenuation * intensity_factor * spot_light_intensities[i];
 
-	    Lo += total_intensity * brdf_color; // changed to total_intensity
+        Lo += total_intensity * brdf_color; // changed to total_intensity
     }
 
     fragColor = vec4(Lo, 1);
