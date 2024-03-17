@@ -261,6 +261,25 @@ bool Shader::setMatrixParameter(const std::string& paramName, const Matrix4x4& v
     return success;
 }
 
+bool Shader::setMatrixArrayParameter(const std::string& paramName, const Matrix4x4* value, int size)
+{
+
+    bool success = true;
+
+    //float buf[16];
+    //convertToGLMatrix(value, buf);
+
+    int uniformLocation = glGetUniformLocation(programId_.id, paramName.c_str());
+
+    if (uniformLocation >= 0)
+        glUniformMatrix4fv(uniformLocation, size, GL_FALSE, (GLfloat*)value);
+    else
+        success = false;
+
+    return success;
+
+}
+
 bool Shader::setVertexBuffer(const std::string& paramName, int fieldsPerAttribute, VertexBufferId vertexBufferId) {
 
     return gl_mgr_->setVertexBuffer(programId_, paramName, fieldsPerAttribute, vertexBufferId);

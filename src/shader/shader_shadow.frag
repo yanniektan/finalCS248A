@@ -229,15 +229,15 @@ void main(void)
                                                       // angle from the light direction is grester than
                                                       // cone angle. Caution: this value is in units of degrees!
         //YT Code
-        float distance = length(spot_light_positions[i] - position);
-        float attenuation = 1.0 / (1.0 + distance * distance); // Distance attenuation
-        const float SMOOTHING = 0.1;
-        float intensity_factor = 0.0;
+        const float SMOOTHING = 0.1f;
+        float intensity_factor = 0.0f;
 
         vec3 dir_to_surface = position - light_pos;
         float angle = acos(dot(normalize(dir_to_surface), spot_light_directions[i])) * 180.0 / PI;
         vec3 light_dir = normalize(spot_light_positions[i] - position);
 
+        float distance = length(dir_to_surface);
+        float attenuation = 1.0f / (1.0 + distance * distance); // Distance attenuation
         // TODO CS248 Part 5.1: Spotlight Attenuation: compute the attenuation of the spotlight due to two factors:
         // (1) distance from the spot light (D^2 falloff)
         // (2) attentuation due to being outside the spotlight's cone 
