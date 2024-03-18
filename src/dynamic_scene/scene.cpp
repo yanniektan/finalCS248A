@@ -55,7 +55,7 @@ Matrix4x4 createWorldToCameraMatrix(const Vector3D& eye, const Vector3D& at, con
 
 // Create the z-axis vector of the camera, which is what the eye is looking at minus the camera (@).
   Vector3D w = (eye - at).unit();
-  // Now take the corss product of the up vector and the forward vector, w to get the x-axis vector.
+  // Now take the cross product of the up vector and the forward vector, w to get the x-axis vector.
   Vector3D u = cross(up, w).unit();
   // y axis is just cross product of forward and right vector.
   Vector3D v = cross(w, u).unit();
@@ -65,27 +65,32 @@ Matrix4x4 createWorldToCameraMatrix(const Vector3D& eye, const Vector3D& at, con
     R(0, 0) = u.x;
     R(1, 0) = u.y;
     R(2, 0) = u.z;
+    R(3, 0) = 0.f;
 
-// now translate through the opposite direction of the camera.
-    R(0,1 ) = v.x;
+    R(0, 1) = v.x;
     R(1, 1) = v.y;
     R(2, 1) = v.z;
+    R(3, 1) = 0.f;
 
     R(0, 2) = w.x;
     R(1, 2) = w.y;
     R(2, 2) = w.z;
+    R(3, 2) = 0.f;
 
     R(0, 3) = 0;
     R(1, 3) = 0;
     R(2, 3) = 0;
+    R(3, 3) = 0.f;
 
-    R(0, 3) = -dot(u, eye);
-    R(1, 3) = -dot(v, eye);
-    R(2, 3) = -dot(w, eye);
+// now translate through the opposite direction of the camera.
+    R(0, 3) = -eye.x;
+    R(1, 3) = -eye.y;
+    R(2, 3) = -eye.z;
     R(3, 3) = 1;
-
+    /*for (int i = 0; i < 4; i++)
+        printf("%f ", R.column(3)[i]);
+    printf("\n");*/
     // combine matrices to form new matrix.
-
 
     return R;
 
@@ -282,7 +287,7 @@ void Scene::renderShadowPass(int shadowedLightIndex) {
     float fovy = std::max(1.4f * coneAngle, 60.0f);
     float aspect = 1.0f;
     float near = 10.f;
-    float far = 400.;
+    float far = 400.f;
 
     // TODO CS248 Part 5.2 Shadow Mapping
     // Here we render the shadow map for the given light. You need to accomplish the following:
@@ -310,18 +315,36 @@ void Scene::renderShadowPass(int shadowedLightIndex) {
     // Replaces the following lines with correct implementation.
 
     // sklekena-yannie: our implementation
-    Matrix4x4 worldToLight = createWorldToCameraMatrix(lightPos, lightDir, Vector3D(0.0f, 1.0f, 0.0f));
+    // use f_bind to bind the framebuffer to render the shadow map.
+    auto fb_bind = gl_mgr_->bindFrameBuffer(shadowFrameBufferId_[shadowedLightIndex]);
+
+
+    // Create a camera matrix for the light source.
+    Vector3D at = lightPos + lightDir;
+    // Create a y_axis vector for the light source.
+    Vector3D y_axis(0, 1, 0);
+    // If the light direction is parallel to the y-axis, then we need to change the y-axis to something else.
+    if (lightDir == y_axis) {
+        y_axis = (1, 0, 1);
+    }
+    // Create the up vector for the light source.
+    Vector3D up = cross(lightDir, cross(lightDir, y_axis));
+
+    // Create the world to camera matrix for the light source.
+    Matrix4x4 worldToCamera = createWorldToCameraMatrix(lightPos, at, up);
+    // Create the perspective matrix for the light source.
     Matrix4x4 proj = createPerspectiveMatrix(fovy, aspect, near, far);
-    Matrix4x4 worldToLightNDC = proj * worldToLight;
+    // Create the world to camera matrix for the light source.
+    Matrix4x4 worldToLightNDC = proj * worldToCamera;
+
+    // Create the world to shadow light matrix for the light source.
     worldToShadowLight_[shadowedLightIndex] = worldToLightNDC;
 
     glViewport(0, 0, shadowTextureSize_, shadowTextureSize_);
 
-    // bind fbo
-    auto fb_bind = gl_mgr_->bindFrameBuffer(shadowFrameBufferId_[shadowedLightIndex]);
-    
     glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
     glEnable(GL_DEPTH_TEST);
+
     // Now draw all the objects in the scene
     for (SceneObject *obj : objects_)
         obj->drawShadow(worldToShadowLight_[shadowedLightIndex]);
