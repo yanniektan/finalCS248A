@@ -309,18 +309,19 @@ void Scene::renderShadowPass(int shadowedLightIndex) {
     // 
     // Replaces the following lines with correct implementation.
 
-    // our implementation
-    Matrix4x4 worldToLight = createWorldToCameraMatrix(lightPos, lightDir, camera_->getUpDir());
+    // sklekena-yannie: our implementation
+    Matrix4x4 worldToLight = createWorldToCameraMatrix(lightPos, lightDir, Vector3D(0.0f, 1.0f, 0.0f));
     Matrix4x4 proj = createPerspectiveMatrix(fovy, aspect, near, far);
     Matrix4x4 worldToLightNDC = proj * worldToLight;
     worldToShadowLight_[shadowedLightIndex] = worldToLightNDC;
 
     glViewport(0, 0, shadowTextureSize_, shadowTextureSize_);
 
-    glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-    glEnable(GL_DEPTH_TEST);
     // bind fb
     auto fb_bind = gl_mgr_->bindFrameBuffer(shadowFrameBufferId_[shadowedLightIndex]);
+    
+    glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+    glEnable(GL_DEPTH_TEST);
     // Now draw all the objects in the scene
     for (SceneObject *obj : objects_)
         obj->drawShadow(worldToLightNDC);

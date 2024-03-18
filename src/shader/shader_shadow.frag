@@ -282,7 +282,7 @@ void main(void)
         vec3 shadow_uv = vec3(lp_position.xy, i);
         // perform light-space depth test
         // get depth
-        float shadow_min_depth = texture(shadowTextureSamplers, shadow_uv).r;
+        float shadow_min_depth = texture(shadowTextureSamplers, shadow_uv).x;
             // bilerp maybe
         // compute distance from current_light -> position
         //float current_light_depth = length(position - light_pos);
