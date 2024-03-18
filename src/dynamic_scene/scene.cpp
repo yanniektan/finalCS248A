@@ -317,14 +317,14 @@ void Scene::renderShadowPass(int shadowedLightIndex) {
 
     glViewport(0, 0, shadowTextureSize_, shadowTextureSize_);
 
-    // bind fb
+    // bind fbo
     auto fb_bind = gl_mgr_->bindFrameBuffer(shadowFrameBufferId_[shadowedLightIndex]);
     
     glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
     glEnable(GL_DEPTH_TEST);
     // Now draw all the objects in the scene
     for (SceneObject *obj : objects_)
-        obj->drawShadow(worldToLightNDC);
+        obj->drawShadow(worldToShadowLight_[shadowedLightIndex]);
 
     // store fb in array
     checkGLError("end shadow pass");
