@@ -300,9 +300,38 @@ void Scene::renderShadowPass(int shadowedLightIndex) {
     //       auto fb_bind = gl_mgr_->bindFrameBuffer(100);
     //       drawTriangles();  //  <- Framebuffer 100 is bound, since fb_bind is still alive here.
     // 
+
+    // Binding the framebuffer to render the shadow map because we are going to render the shadow map and not the color buffer.
+
     // Replaces the following lines with correct implementation.
-    Matrix4x4 worldToLightNDC = Matrix4x4::identity();
-    worldToShadowLight_[shadowedLightIndex].zero();
+
+    // use f_bind to bind the framebuffer to render the shadow map.
+    auto fb_bind = gl_mgr_->bindFrameBuffer(shadowFrameBufferId_[shadowedLightIndex]);
+
+
+    // Create a camera matrix for the light source.
+    Vector3D at = lightPos + lightDir;
+    // Create a y_axis vector for the light source.
+    Vector3D y_axis(0, 1, 0);
+    // If the light direction is parallel to the y-axis, then we need to change the y-axis to something else.
+    if (lightDir == y_axis) {
+        y_axis = (1, 0, 1);
+    }
+    // Create the up vector for the light source.
+    Vector3D up = cross(lightDir, cross(lightDir, y_axis));
+
+    // Create the world to camera matrix for the light source.
+    Matrix4x4 worldToCamera = createWorldToCameraMatrix(lightPos, at, up);
+    // Create the perspective matrix for the light source.
+    Matrix4x4 proj = createPerspectiveMatrix(fovy, aspect, near, far);  
+    // Create the world to camera matrix for the light source.
+    Matrix4x4 worldToLightNDC = proj * worldToCamera;
+
+    // Create the world to shadow light matrix for the light source.
+    worldToShadowLight_[shadowedLightIndex] = worldToLightNDC;
+
+    // Matrix4x4 worldToLightNDC = Matrix4x4::identity();
+    // worldToShadowLight_[shadowedLightIndex].zero();
 
     glViewport(0, 0, shadowTextureSize_, shadowTextureSize_);
 
