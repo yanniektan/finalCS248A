@@ -16,10 +16,10 @@ uniform sampler2D diffuseTextureSampler;
 
 // TODO CS248 Part 3: Normal Mapping
 uniform sampler2D normalTextureSampler;
-// TODO CS248 Part 4: Environment Mapping
-uniform sampler2D environmentTextureSampler;
 
-//
+// TODO CS248 Part 4: Environment Mapping
+uniform sampler2D envMapSampler;
+
 // lighting environment definition. Scenes may contain directional
 // and point light sources, as well as an environment map
 //
@@ -57,8 +57,6 @@ in vec3 vertex_diffuse_color; // surface color
 out vec4 fragColor;
 
 #define PI 3.14159265358979323846
-
-
 //
 // Simple diffuse brdf
 //
@@ -82,8 +80,9 @@ vec3 Phong_BRDF(vec3 L, vec3 V, vec3 N, vec3 diffuse_color, vec3 specular_color,
     // TODO CS248 Part 2: Phong Reflectance
     // Implement diffuse and specular terms of the Phong
     // reflectance model here.
-    vec3 final_color = diffuse_color * max(0.0f, dot(L, N));
-    vec3 refl_dir = 2.0f*dot(L, N)*N - L;
+    vec3 final_color = diffuse_color * max(0.0f, dot(N, L)); // changed L / N to N / L
+    vec3 refl_dir = 2.0f*dot(L, N)*N;
+
     final_color += specular_color * pow(max(0.0f, dot(refl_dir, V)), specular_exponent);
     return final_color;
 }
@@ -110,24 +109,25 @@ vec3 SampleEnvironmentMap(vec3 D)
     //
     // (3) How do you convert theta and phi to normalized texture
     //     coordinates in the domain [0,1]^2?
-    float len = length(D);
-    float inv_len = 1.0f / len;
-    float double_PI = 2.0f*PI;
-    /*
-    Polar Angle: (\theta = \arccos\left(\frac{z}{r}\right))
-    Azimuthal Angle: (\phi = \arctan\left(\frac{y}{x}\right))
-    */
-    float v = acos(D.y / len); // theta
-    float u = 0.0f;
-    if (D.z != 0.0f)
-        u = atan(D.x, D.z); // phi
-    if (u < 0.0f)
-        u += double_PI; // Convert negative values to the range 0 - 2PI
-    v /= PI;
-    u = 2.0f*PI - u;
-    u /= double_PI;
-    vec3 radiance = texture(environmentTextureSampler, vec2(u, v)).rgb;
-    return radiance;  
+
+    D = normalize(D);
+
+    // convert 3D direction vector into spherical coordinates
+    float phi = atan(D.y, D.x);
+    float theta = acos(D.z / length(D)); // Ensure D is normalized, or just use D.z if D is known to be normalized
+
+    // Adjust phi to be in the range [0, 2PI]
+    if (phi < 0.0) {
+        phi += 2.0 * PI;
+    }
+
+    // Convert theta and phi into normalized texture coordinates [0,1]
+    float u = phi / (2.0 * PI);
+    float v = theta / PI;
+
+    // Sample envMapSampler as declared above
+    vec3 envColor = texture(envMapSampler, vec2(u, v)).rgb;
+    return envColor;
 }
 
 //
@@ -150,12 +150,12 @@ void main(void)
         diffuseColor = vertex_diffuse_color;
     }
 
-    // perform normal map lookup if required
+        // perform normal map lookup if required
     vec3 N = vec3(0);
     if (useNormalMapping) {
        // TODO: CS248 Part 3: Normal Mapping:
        // use tan2World in the normal map to compute the
-       // world space normal baaed on the normal map.
+       // world space normal based on the normal map.
 
        // Note that values from the texture should be scaled by 2 and biased
        // by negative -1 to covert positive values from the texture fetch, which
@@ -173,7 +173,7 @@ void main(void)
     } else {
        N = normalize(normal);
     }
-
+    
     vec3 V = normalize(dir2camera);
     vec3 Lo = vec3(0.1 * diffuseColor);   // this is ambient
 
@@ -187,9 +187,8 @@ void main(void)
         // compute perfect mirror reflection direction here.
         // You'll also need to implement environment map sampling in SampleEnvironmentMap()
         //
-        vec3 R = normalize(dir2camera);
-        R = 2.0f*dot(R, normal)*normal - R;
-        R = normalize(R);
+        vec3 R = normalize(vec3(1.0));
+        R = reflect(normalize(-dir2camera), normalize(normal)); // use this to reflect the image.
 
         // sample environment map
         vec3 envColor = SampleEnvironmentMap(R);
@@ -219,29 +218,10 @@ void main(void)
         float falloff = 1.0 / (0.01 + distance * distance);
         Lo += light_magnitude * falloff * brdf_color;
     }
-
-    // for all spot lights
-	for (int i = 0; i < num_spot_lights; ++i) {
     
-        vec3 intensity = spot_light_intensities[i];   // intensity of light: this is intensity in RGB
-        vec3 light_pos = spot_light_positions[i];     // location of spotlight
-        float cone_angle = spot_light_angles[i];      // spotlight falls off to zero in directions whose
-                                                      // angle from the light direction is grester than
-                                                      // cone angle. Caution: this value is in units of degrees!
-        //YT Code
-        float distance = length(spot_light_positions[i] - position);
-        float attenuation = 1.0 / (1.0 + distance * distance); // Distance attenuation
-        const float SMOOTHING = 0.1;
-        float intensity_factor = 0.0;
-
-        vec3 dir_to_surface = position - light_pos;
-        float angle = acos(dot(normalize(dir_to_surface), spot_light_directions[i])) * 180.0 / PI;
-        vec3 light_dir = normalize(spot_light_positions[i] - position);
-
         // TODO CS248 Part 5.1: Spotlight Attenuation: compute the attenuation of the spotlight due to two factors:
         // (1) distance from the spot light (D^2 falloff)
-        // (2) attentuation due to being outside the spotlight's cone 
-        //
+        // (2) attentuation due to being outside the spotlight's cone.
         // Here is a description of what to compute:
         //
         // 1. Modulate intensity by a factor of 1/D^2, where D is the distance from the
@@ -254,8 +234,6 @@ void main(void)
             intensity_factor = (1.0 + SMOOTHING) * cone_angle - angle;
             intensity_factor /= (2.0 * SMOOTHING * cone_angle);
         }
-
-        //
         // 2. Modulate the resulting intensity based on whether the surface point is in the cone of
         //    illumination.  To achieve a smooth falloff, consider the following rules
         //    
@@ -269,18 +247,37 @@ void main(void)
         //
         //    -- The reference solution uses SMOOTHING = 0.1, so 20% of the spotlight region is the smoothly
         //       facing out area.  Smaller values of SMOOTHING will create hard spotlights.
-        // CS248: remove this once you perform proper attenuation computations
-        // intensity = vec3(0.5, 0.5, 0.5);
+       
+        // for all spot lights
+	      for (int i = 0; i < num_spot_lights; ++i) {
+    
+          vec3 intensity = spot_light_intensities[i];   // intensity of light: this is intensity in RGB
+          vec3 light_pos = spot_light_positions[i];     // location of spotlight
+          float cone_angle = spot_light_angles[i];      // spotlight falls off to zero in directions whose
+                                                        // angle from the light direction > cone angle.
+
+          float distance = length(spot_light_positions[i] - position);
+          float attenuation = 1.0 / (1.0 + distance * distance); // Distance attenuation
+          const float SMOOTHING = 0.1;
+          float intensity_factor = 0.0;
+
+          vec3 dir_to_surface = position - light_pos;
+          float angle = acos(dot(normalize(dir_to_surface), spot_light_directions[i])) * 180.0 / PI;
+          vec3 light_dir = normalize(spot_light_positions[i] - position);
+
+          if(angle < (1.0 - SMOOTHING) * cone_angle) {
+              intensity_factor = 1.0;
+          } else if (angle < (1.0 + SMOOTHING) * cone_angle) {
+              intensity_factor = (1.0 + SMOOTHING) * cone_angle - angle;
+              intensity_factor /= (2.0 * SMOOTHING * cone_angle);
+        }
+
         // Render Shadows for all spot lights
         // TODO CS248 Part 5.2: Shadow Mapping: comute shadowing for spotlight i here 
-        // HAVENT DONE
 
 	    vec3 L = normalize(-spot_light_directions[i]);
-		vec3 brdf_color = Phong_BRDF(L, V, N, diffuseColor, specularColor, specularExponent);
-
-        // YT:
-        vec3 total_intensity = attenuation * intensity_factor * spot_light_intensities[i];
-
+		  vec3 brdf_color = Phong_BRDF(L, V, N, diffuseColor, specularColor, specularExponent);
+      vec3 total_intensity = attenuation * intensity_factor * spot_light_intensities[i];
 	    Lo += total_intensity * brdf_color; // changed to total_intensity
     }
 
