@@ -54,28 +54,27 @@ Matrix4x4 createWorldToCameraMatrix(const Vector3D& eye, const Vector3D& at, con
 // normalize point
 
 // Create the z-axis vector of the camera, which is what the eye is looking at minus the camera (@).
-  Vector3D w = (eye - at).unit();
+  Vector3D w = (eye - at).unit(); // forward
   // Now take the cross product of the up vector and the forward vector, w to get the x-axis vector.
-  Vector3D u = cross(up, w).unit();
+  Vector3D u = cross(up, w).unit(); // right
   // y axis is just cross product of forward and right vector.
   Vector3D v = cross(w, u).unit();
 
   // Construct a rotation matrix from these basis vectors.
     Matrix4x4 R;
+    R = R.identity();
+
     R(0, 0) = u.x;
     R(1, 0) = u.y;
     R(2, 0) = u.z;
-    R(3, 0) = 0.f;
 
     R(0, 1) = v.x;
     R(1, 1) = v.y;
     R(2, 1) = v.z;
-    R(3, 1) = 0.f;
 
     R(0, 2) = w.x;
     R(1, 2) = w.y;
     R(2, 2) = w.z;
-    R(3, 2) = 0.f;
 
     R(0, 3) = 0;
     R(1, 3) = 0;
@@ -83,6 +82,7 @@ Matrix4x4 createWorldToCameraMatrix(const Vector3D& eye, const Vector3D& at, con
     R(3, 3) = 0.f;
 
 // now translate through the opposite direction of the camera.
+
     R(0, 3) = -eye.x;
     R(1, 3) = -eye.y;
     R(2, 3) = -eye.z;
@@ -346,10 +346,9 @@ void Scene::renderShadowPass(int shadowedLightIndex) {
     glEnable(GL_DEPTH_TEST);
 
     // Now draw all the objects in the scene
-    for (SceneObject *obj : objects_)
-        obj->drawShadow(worldToShadowLight_[shadowedLightIndex]);
+    for (SceneObject* obj : objects_)
+        obj->drawShadow(worldToLightNDC);
 
-    // store fb in array
     checkGLError("end shadow pass");
 }
 
