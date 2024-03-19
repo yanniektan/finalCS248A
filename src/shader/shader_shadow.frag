@@ -279,16 +279,18 @@ void main(void)
         // CS248: remove this once you perform proper attenuation computations
         // intensity = vec3(0.5, 0.5, 0.5);
         // Render Shadows for all spot lights
-        // TODO CS248 Part 5.2: Shadow Mapping: comute shadowing for spotlight i here 
+        // TODO CS248 Part 5.2: Shadow Mapping: commute shadowing for spotlight i here 
         // sklekena-yannie:
 
-        vec3 lp_position = world_to_light_array[i].xyz;
-        lp_position /= world_to_light_array[i].w;
+        vec4 lp_position = vec4(position, 1.0f);
+         lp_position = world_to_light_array[i] * lp_position;
+        vec2 shadow_uv = lp_position.xy / lp_position.w;
+
         // to index into the texture array we need vec3(u, v, layer level)
-        vec3 shadow_uv = vec3(lp_position.xy, i);
+        vec3 shadow_uv_index = vec3(shadow_uv, i);
         // perform light-space depth test
         // get depth
-        float shadow_min_depth = linearize_depth(texture(shadowTextureSamplers, shadow_uv).x);
+        float shadow_min_depth = linearize_depth(texture(shadowTextureSamplers, shadow_uv_index).x);
             // bilerp maybe
         // compute distance from current_light -> position
         //float current_light_depth = length(position - light_pos);
