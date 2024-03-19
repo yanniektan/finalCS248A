@@ -292,13 +292,11 @@ void main(void)
         // perform light-space depth test
         // get depth
         float shadow_min_depth = texture(shadowTextureSamplers, shadow_uv_index).x;
-            // bilerp maybe
-        // compute distance from current_light -> position
-        //float current_light_depth = length(position - light_pos);
+        
         // check if current depth farther than depth at suv
         // handle shadow acne
-        float bias = 0.001f;
-        if (!(shadow_uva.z - bias < shadow_min_depth)) //linearize_depth(shadow_min_depth))
+        float bias = max(0.005f * (1.0f - dot(normal, light_dir)), 0.001f);
+        if (!(linearize_depth(shadow_uva.z - bias) < linearize_depth(shadow_min_depth)))
             continue;
         
         vec3 L = normalize(-spot_light_directions[i]);
