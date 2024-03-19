@@ -283,7 +283,9 @@ void main(void)
         // sklekena-yannie:
 
         vec4 position_shadowlight = fragLightPosition[i];
-        vec2 shadow_uv = position_shadowlight.xy / position_shadowlight.w;
+        vec3 shadow_uva = position_shadowlight.xyz / position_shadowlight.w;
+        shadow_uva = shadow_uva*0.5f + 0.5f;
+        vec2 shadow_uv = shadow_uva.xy;
 
         // to index into the texture array we need vec3(u, v, layer level)
         vec3 shadow_uv_index = vec3(shadow_uv, i);
@@ -294,8 +296,9 @@ void main(void)
         // compute distance from current_light -> position
         //float current_light_depth = length(position - light_pos);
         // check if current depth farther than depth at suv
-        if (linearize_depth(position_shadowlight.z) > shadow_min_depth )
-            // handle shadow acne
+        // handle shadow acne
+        float bias = 0.001f;
+        if (!(shadow_uva.z - bias < shadow_min_depth)) //linearize_depth(shadow_min_depth))
             continue;
         
         vec3 L = normalize(-spot_light_directions[i]);
