@@ -27,6 +27,7 @@ uniform sampler2DArray shadowTextureSamplers;
 #define MAX_NUM_LIGHTS 10
 uniform int  num_directional_lights;
 uniform vec3 directional_light_vectors[MAX_NUM_LIGHTS];
+uniform mat4 world_to_light_array[MAX_NUM_LIGHTS];
 
 uniform int  num_point_lights;
 uniform vec3 point_light_positions[MAX_NUM_LIGHTS];
@@ -53,13 +54,18 @@ in vec2 texcoord;     // surface texcoord (uv)
 in vec3 dir2camera;   // vector from surface point to camera
 in mat3 tan2world;    // tangent space to world space transform
 in vec3 vertex_diffuse_color; // surface color
-in vec4 fragLightPosition[MAX_NUM_LIGHTS];
 
 out vec4 fragColor;
 
 #define PI 3.14159265358979323846
 
-
+float linearize_depth(float depth)
+{
+    float near_plane = 10.0;
+    float far_plane = 400.0;
+    float z = depth * 2.0 - 1.0; // Back to NDC 
+    return (2.0 * near_plane * far_plane) / (far_plane + near_plane - z * (far_plane - near_plane));
+}
 //
 // Simple diffuse brdf
 //
@@ -276,13 +282,13 @@ void main(void)
         // TODO CS248 Part 5.2: Shadow Mapping: comute shadowing for spotlight i here 
         // sklekena-yannie:
 
-        vec3 lp_position = fragLightPosition[i].xyz;
-        lp_position /= fragLightPosition[i].w;
+        vec3 lp_position = world_to_light_array[i].xyz;
+        lp_position /= world_to_light_array[i].w;
         // to index into the texture array we need vec3(u, v, layer level)
         vec3 shadow_uv = vec3(lp_position.xy, i);
         // perform light-space depth test
         // get depth
-        float shadow_min_depth = texture(shadowTextureSamplers, shadow_uv).x;
+        float shadow_min_depth = linearize_depth(texture(shadowTextureSamplers, shadow_uv).x);
             // bilerp maybe
         // compute distance from current_light -> position
         //float current_light_depth = length(position - light_pos);

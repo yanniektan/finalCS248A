@@ -14,8 +14,8 @@ float linearize_depth(float depth)
 
 void main(void) {
 
-   //float depth = texture(depthTextureArray, vec3(vTexCoord,0)).x;  // Using the first layer
-   //fragColor = vec4(depth, depth, depth, 1.0); // Grayscale depth image
-    vec3 color = texture(colorTextureArray, vec3(vTexCoord,0)).rgb;
-    fragColor = vec4(color, 1.0);
+   float depth = texture(depthTextureArray, vec3(vTexCoord,0)).x;  // Using the first layer
+   fragColor = vec4(depth, depth, depth, 1.0); // Grayscale depth image
+    // vec3 color = texture(colorTextureArray, vec3(vTexCoord,0)).rgb;
+    // fragColor = vec4(color, 1.0);
 }

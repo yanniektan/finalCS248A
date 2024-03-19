@@ -404,8 +404,14 @@ void Mesh::internalDraw(bool shadowPass, const Matrix4x4& worldToNDC) const {
             const StaticScene::DirectionalLight* light = scene_->getDirectionalLight(j);
             shader_->setVectorParameter(varname, light->lightDir);
         }
+	    checkGLError("before bind world to light matrix attributes");
 
-	    checkGLError("before bind point light attributes");
+		for (int j = 0; j < scene_->getNumShadowedLights(); j++) {
+			string varname = "world_to_light_array[" + std::to_string(j) + "]";
+			const auto wtl = scene_->getWorldToShadowLight(j);
+			shader_->setMatrixParameter(varname, wtl);
+		}
+		checkGLError("before bind point light attributes");
 
         for (int j=0; j<scene_->getNumPointLights(); j++) {
             string varname = "point_light_positions[" + std::to_string(j) + "]";

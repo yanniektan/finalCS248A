@@ -25,7 +25,6 @@ out vec2 texcoord;
 out vec3 dir2camera;                // world space vector from surface point to camera
 out vec3 normal;
 out mat3 tan2world;                 // tangent space rotation matrix multiplied by obj2WorldNorm
-out vec4 fragLightPosition[MAX_NUM_LIGHTS];
 
 void main(void)
 {
@@ -64,13 +63,6 @@ void main(void)
     mat3 tan2obj = mat3(t, nt, n);
     tan2obj = tan2obj;
     tan2world = tan2obj*obj2worldNorm;
-
-    // sklekena-yannie: compute shadow positions
-    for (int i = 0; i < num_spot_lights; i++)
-    {
-        mat4 wtl = worldToLightArray[i];
-        fragLightPosition[i] = wtl * vec4(vtx_position, 1.0f);
-    }
 
     vertex_diffuse_color = vtx_diffuse_color;
     texcoord = vtx_texcoord;
