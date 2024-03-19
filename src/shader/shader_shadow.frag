@@ -38,7 +38,6 @@ uniform vec3  spot_light_directions[MAX_NUM_LIGHTS];
 uniform vec3  spot_light_intensities[MAX_NUM_LIGHTS];
 uniform float spot_light_angles[MAX_NUM_LIGHTS];
 
-
 //
 // material-specific uniforms
 //
@@ -54,6 +53,7 @@ in vec2 texcoord;     // surface texcoord (uv)
 in vec3 dir2camera;   // vector from surface point to camera
 in mat3 tan2world;    // tangent space to world space transform
 in vec3 vertex_diffuse_color; // surface color
+in vec4 fragLightPosition[MAX_NUM_LIGHTS];
 
 out vec4 fragColor;
 
@@ -279,23 +279,22 @@ void main(void)
         // CS248: remove this once you perform proper attenuation computations
         // intensity = vec3(0.5, 0.5, 0.5);
         // Render Shadows for all spot lights
-        // TODO CS248 Part 5.2: Shadow Mapping: commute shadowing for spotlight i here 
+        // TODO CS248 Part 5.2: Shadow Mapping: compute shadowing for spotlight i here 
         // sklekena-yannie:
 
-        vec4 lp_position = vec4(position, 1.0f);
-         lp_position = world_to_light_array[i] * lp_position;
-        vec2 shadow_uv = lp_position.xy / lp_position.w;
+        vec4 position_shadowlight = fragLightPosition[i];
+        vec2 shadow_uv = position_shadowlight.xy / position_shadowlight.w;
 
         // to index into the texture array we need vec3(u, v, layer level)
         vec3 shadow_uv_index = vec3(shadow_uv, i);
         // perform light-space depth test
         // get depth
-        float shadow_min_depth = linearize_depth(texture(shadowTextureSamplers, shadow_uv_index).x);
+        float shadow_min_depth = texture(shadowTextureSamplers, shadow_uv_index).x;
             // bilerp maybe
         // compute distance from current_light -> position
         //float current_light_depth = length(position - light_pos);
         // check if current depth farther than depth at suv
-        if (lp_position.z > shadow_min_depth )
+        if (linearize_depth(position_shadowlight.z) > shadow_min_depth )
             // handle shadow acne
             continue;
         

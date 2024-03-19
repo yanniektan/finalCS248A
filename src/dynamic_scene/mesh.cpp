@@ -365,9 +365,9 @@ void Mesh::internalDraw(bool shadowPass, const Matrix4x4& worldToNDC) const {
         // Shadow Map given any point on the object.
         // For examples of passing arrays to the shader, look below for "directional_light_vectors[]" etc.
 
-		shader_->setMatrixArrayParameter("worldToLightArray", scene_->getWorldToShadowLightArray(), scene_->getNumShadowedLights());
+		/*shader_->setMatrixArrayParameter("worldToLightArray", scene_->getWorldToShadowLightArray(), scene_->getNumShadowedLights());
 		checkGLError("after binding mat4 array");
-
+		*/
 		checkGLError("after bind uniforms, about to bind textures");
 
         // bind texture samplers ///////////////////////////////////
