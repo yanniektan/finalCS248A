@@ -44,57 +44,48 @@ Matrix4x4 createPerspectiveMatrix(float fovy, float aspect, float near, float fa
 
 Matrix4x4 createWorldToCameraMatrix(const Vector3D& eye, const Vector3D& at, const Vector3D& up) {
 
-  // TODO CS248 Part 1: Coordinate transform
-  // Compute the matrix that transforms a point in world space to a point in camera space.
+    // TODO CS248 Part 1: Coordinate transform
+    // Compute the matrix that transforms a point in world space to a point in camera space.
 
-// you have a point
-// you have a perspective projection
-// transform X into camera space, shift -Pc
-// Perform perspective projection
-// normalize point
+    Vector3D cameraPosition = eye;
+    Vector3D cameraAt = at;
+    Vector3D forward = cameraPosition - cameraAt; // this is the forward vector.
+    forward.normalize();
 
-// Create the z-axis vector of the camera, which is what the eye is looking at minus the camera (@).
-  Vector3D w = (eye - at).unit(); // forward
-  // Now take the cross product of the up vector and the forward vector, w to get the x-axis vector.
-  Vector3D u = cross(up, w).unit(); // right
-  // y axis is just cross product of forward and right vector.
-  Vector3D v = cross(w, u).unit();
+    Vector3D right = cross(up, forward); // this is the right vector.
+    right.normalize();
 
-  // Construct a rotation matrix from these basis vectors.
-    Matrix4x4 R;
-    R = R.identity();
+    Vector3D u = cross(forward, right); // this is the up vector.
+    u.normalize();
 
-    R(0, 0) = u.x;
-    R(1, 0) = u.y;
-    R(2, 0) = u.z;
+    // Lookat is rotation * translation.
 
-    R(0, 1) = v.x;
-    R(1, 1) = v.y;
-    R(2, 1) = v.z;
+    Matrix4x4 rotation;
 
-    R(0, 2) = w.x;
-    R(1, 2) = w.y;
-    R(2, 2) = w.z;
+    rotation[0][0] = right.x;
+    rotation[1][0] = right.y;
+    rotation[2][0] = right.z;
+    rotation[3][0] = 0.0;
 
-    R(0, 3) = 0;
-    R(1, 3) = 0;
-    R(2, 3) = 0;
-    R(3, 3) = 0.f;
+    rotation[0][1] = u.x;
+    rotation[1][1] = u.y;
+    rotation[2][1] = u.z;
+    rotation[3][1] = 0.0;
 
-// now translate through the opposite direction of the camera.
+    rotation[0][2] = forward.x;
+    rotation[1][2] = forward.y;
+    rotation[2][2] = forward.z;
+    rotation[3][2] = 0.0;
 
-    R(0, 3) = -eye.x;
-    R(1, 3) = -eye.y;
-    R(2, 3) = -eye.z;
-    R(3, 3) = 1;
-    /*for (int i = 0; i < 4; i++)
-        printf("%f ", R.column(3)[i]);
-    printf("\n");*/
-    // combine matrices to form new matrix.
+    rotation[3][0] = 0.0;
+    rotation[3][1] = 0.0;
+    rotation[3][2] = 0.0;
+    rotation[3][3] = 1.0;
 
-    return R;
+    Matrix4x4 translation = Matrix4x4::translation(-cameraPosition);
+    Matrix4x4 LookAt = rotation * translation;
 
-//   return Matrix4x4::translation(Vector3D(-20,0,-150));
+    return LookAt;
 
 }
 
