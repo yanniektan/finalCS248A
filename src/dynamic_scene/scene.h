@@ -162,6 +162,7 @@ class Scene {
     Shader*   getShadowShader() const { return shadowShader_; }
     TextureArrayId getShadowTextureArrayId() const { return shadowDepthTextureArrayId_; }
     Matrix4x4 getWorldToShadowLight(int lightid) const { return worldToShadowLight_[lightid]; }
+    const Matrix4x4* getWorldToShadowLightArray() const { return worldToShadowLight_; }
 
     size_t getNumShadowedLights() const;
     size_t getNumDirectionalLights() const { return directionalLights_.size(); }

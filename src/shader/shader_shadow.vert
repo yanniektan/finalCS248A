@@ -7,6 +7,7 @@ uniform int  num_spot_lights;
 uniform mat3 obj2worldNorm;             // object to world transform for normals
 uniform vec3 camera_position;           // world space camera position           
 uniform mat4 mvp;                       // ModelViewProjection Matrix
+uniform mat4 world_to_light_array[MAX_NUM_LIGHTS];
 
 uniform bool useNormalMapping;         // true if normal mapping should be used
 
@@ -24,6 +25,7 @@ out vec2 texcoord;
 out vec3 dir2camera;                // world space vector from surface point to camera
 out vec3 normal;
 out mat3 tan2world;                 // tangent space rotation matrix multiplied by obj2WorldNorm
+out vec4 fragLightPosition[MAX_NUM_LIGHTS];
 
 void main(void)
 {
@@ -61,8 +63,15 @@ void main(void)
     vec3 nt = normalize(cross(n,t));
     mat3 tan2obj = mat3(t, nt, n);
     tan2obj = tan2obj;
-    tan2world = tan2obj*obj2worldNorm;
-    
+    tan2world = tan2obj*obj2worldNorm; // !!!!!!!!!!!!!!!!!! not right mult
+
+    // sklekena-yannie: compute shadow positions
+    for (int i = 0; i < num_spot_lights; i++)
+    {
+        mat4 wtl = world_to_light_array[i];
+        fragLightPosition[i] = wtl * vec4(vtx_position, 1.0f);
+    }
+
     vertex_diffuse_color = vtx_diffuse_color;
     texcoord = vtx_texcoord;
     dir2camera = camera_position - position;

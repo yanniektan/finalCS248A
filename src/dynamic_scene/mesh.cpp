@@ -304,7 +304,10 @@ void Mesh::internalDraw(bool shadowPass, const Matrix4x4& worldToNDC) const {
 	Matrix3x3 objectToWorldForNormals = getObjectToWorldForNormals();
 	Matrix4x4 mvp = worldToNDC * objectToWorld;
 
-	// cout << "obj2world: " << objectToWorld << endl;
+	/*if (shadowPass)
+		cout << "worldToLight: " << scene_->getWorldToShadowLight(0) << endl;
+	else
+		cout << "obj2world: " << objectToWorld << endl;*/
 
 	auto vertex_array_bind = gl_mgr_->bindVertexArray(vertexArrayId_);
 
@@ -362,7 +365,9 @@ void Mesh::internalDraw(bool shadowPass, const Matrix4x4& worldToNDC) const {
         // Shadow Map given any point on the object.
         // For examples of passing arrays to the shader, look below for "directional_light_vectors[]" etc.
 
-
+		/*shader_->setMatrixArrayParameter("worldToLightArray", scene_->getWorldToShadowLightArray(), scene_->getNumShadowedLights());
+		checkGLError("after binding mat4 array");
+		*/
 		checkGLError("after bind uniforms, about to bind textures");
 
         // bind texture samplers ///////////////////////////////////
@@ -384,6 +389,8 @@ void Mesh::internalDraw(bool shadowPass, const Matrix4x4& worldToNDC) const {
         // You want to pass the array of shadow textures computed during shadow pass into the shader program.
         // See Scene::visualizeShadowMap for an example of passing texture arrays.
         // See shadow_viz.frag for an example of using texture arrays in the shader.
+		shader_->setTextureArraySampler("shadowTextureSamplers", scene_->getShadowTextureArrayId());
+		checkGLError("after binding shadowTextureSampler");
 
 
         // bind light parameters //////////////////////////////////
@@ -397,8 +404,14 @@ void Mesh::internalDraw(bool shadowPass, const Matrix4x4& worldToNDC) const {
             const StaticScene::DirectionalLight* light = scene_->getDirectionalLight(j);
             shader_->setVectorParameter(varname, light->lightDir);
         }
+	    checkGLError("before bind world to light matrix attributes");
 
-	    checkGLError("before bind point light attributes");
+		for (int j = 0; j < scene_->getNumShadowedLights(); j++) {
+			string varname = "world_to_light_array[" + std::to_string(j) + "]";
+			const auto wtl = scene_->getWorldToShadowLight(j);
+			shader_->setMatrixParameter(varname, wtl);
+		}
+		checkGLError("before bind point light attributes");
 
         for (int j=0; j<scene_->getNumPointLights(); j++) {
             string varname = "point_light_positions[" + std::to_string(j) + "]";

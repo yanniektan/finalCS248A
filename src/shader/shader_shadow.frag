@@ -18,7 +18,7 @@ uniform sampler2D diffuseTextureSampler;
 uniform sampler2D normalTextureSampler;
 // TODO CS248 Part 4: Environment Mapping
 uniform sampler2D environmentTextureSampler;
-
+uniform sampler2DArray shadowTextureSamplers;
 //
 // lighting environment definition. Scenes may contain directional
 // and point light sources, as well as an environment map
@@ -27,6 +27,7 @@ uniform sampler2D environmentTextureSampler;
 #define MAX_NUM_LIGHTS 10
 uniform int  num_directional_lights;
 uniform vec3 directional_light_vectors[MAX_NUM_LIGHTS];
+uniform mat4 world_to_light_array[MAX_NUM_LIGHTS];
 
 uniform int  num_point_lights;
 uniform vec3 point_light_positions[MAX_NUM_LIGHTS];
@@ -36,7 +37,6 @@ uniform vec3  spot_light_positions[MAX_NUM_LIGHTS];
 uniform vec3  spot_light_directions[MAX_NUM_LIGHTS];
 uniform vec3  spot_light_intensities[MAX_NUM_LIGHTS];
 uniform float spot_light_angles[MAX_NUM_LIGHTS];
-
 
 //
 // material-specific uniforms
@@ -53,12 +53,19 @@ in vec2 texcoord;     // surface texcoord (uv)
 in vec3 dir2camera;   // vector from surface point to camera
 in mat3 tan2world;    // tangent space to world space transform
 in vec3 vertex_diffuse_color; // surface color
+in vec4 fragLightPosition[MAX_NUM_LIGHTS];
 
 out vec4 fragColor;
 
 #define PI 3.14159265358979323846
 
-
+float linearize_depth(float depth)
+{
+    float near_plane = 10.0;
+    float far_plane = 400.0;
+    float z = depth * 2.0 - 1.0; // Back to NDC 
+    return (2.0 * near_plane * far_plane) / (far_plane + near_plane - z * (far_plane - near_plane));
+}
 //
 // Simple diffuse brdf
 //
@@ -229,15 +236,15 @@ void main(void)
                                                       // angle from the light direction is grester than
                                                       // cone angle. Caution: this value is in units of degrees!
         //YT Code
-        float distance = length(spot_light_positions[i] - position);
-        float attenuation = 1.0 / (1.0 + distance * distance); // Distance attenuation
-        const float SMOOTHING = 0.1;
-        float intensity_factor = 0.0;
+        const float SMOOTHING = 0.1f;
+        float intensity_factor = 0.0f;
 
         vec3 dir_to_surface = position - light_pos;
         float angle = acos(dot(normalize(dir_to_surface), spot_light_directions[i])) * 180.0 / PI;
         vec3 light_dir = normalize(spot_light_positions[i] - position);
 
+        float distance = length(dir_to_surface);
+        float attenuation = 1.0f / (1.0 + distance * distance); // Distance attenuation
         // TODO CS248 Part 5.1: Spotlight Attenuation: compute the attenuation of the spotlight due to two factors:
         // (1) distance from the spot light (D^2 falloff)
         // (2) attentuation due to being outside the spotlight's cone 
@@ -272,16 +279,33 @@ void main(void)
         // CS248: remove this once you perform proper attenuation computations
         // intensity = vec3(0.5, 0.5, 0.5);
         // Render Shadows for all spot lights
-        // TODO CS248 Part 5.2: Shadow Mapping: comute shadowing for spotlight i here 
-        // HAVENT DONE
+        // TODO CS248 Part 5.2: Shadow Mapping: compute shadowing for spotlight i here 
+        // sklekena-yannie:
 
-	    vec3 L = normalize(-spot_light_directions[i]);
-		vec3 brdf_color = Phong_BRDF(L, V, N, diffuseColor, specularColor, specularExponent);
+        vec4 position_shadowlight = fragLightPosition[i];
+        vec3 shadow_uva = position_shadowlight.xyz / position_shadowlight.w;
+        shadow_uva = shadow_uva*0.5f + 0.5f;
+        vec2 shadow_uv = shadow_uva.xy;
+
+        // to index into the texture array we need vec3(u, v, layer level)
+        vec3 shadow_uv_index = vec3(shadow_uv, i);
+        // perform light-space depth test
+        // get depth
+        float shadow_min_depth = texture(shadowTextureSamplers, shadow_uv_index).x;
+        
+        // check if current depth farther than depth at suv
+        // handle shadow acne
+        float bias = max(0.005f * (1.0f - dot(normal, light_dir)), 0.001f);
+        if (!(linearize_depth(shadow_uva.z - bias) < linearize_depth(shadow_min_depth)))
+            continue;
+        
+        vec3 L = normalize(-spot_light_directions[i]);
+        vec3 brdf_color = Phong_BRDF(L, V, N, diffuseColor, specularColor, specularExponent);
 
         // YT:
         vec3 total_intensity = attenuation * intensity_factor * spot_light_intensities[i];
 
-	    Lo += total_intensity * brdf_color; // changed to total_intensity
+        Lo += total_intensity * brdf_color; // changed to total_intensity
     }
 
     fragColor = vec4(Lo, 1);

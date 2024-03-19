@@ -42,10 +42,10 @@ class Shader {
     bool setVectorParameter(const std::string& paramName, const Vector4D& value);
     bool setMatrixParameter(const std::string& paramName, const Matrix3x3& value);
     bool setMatrixParameter(const std::string& paramName, const Matrix4x4& value);
+    bool setMatrixArrayParameter(const std::string& paramName, const Matrix4x4* value, int size);
     bool setVertexBuffer(const std::string& paramName, int fieldsPerAttribute, VertexBufferId vertexBufferId);
     bool setTextureSampler(const std::string& paramName, TextureId textureId);
     bool setTextureArraySampler(const std::string& paramName, TextureArrayId textureArrayId);
-
   private:
 
     void init();
